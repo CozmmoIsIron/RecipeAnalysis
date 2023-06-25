@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Analysis</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container mt-5">
+    <h1>Recipe Analysis-Vedant</h1>
+    <form id="recipeForm">
+      <div class="form-group">
+        <label for="recipeName">Recipe Name</label>
+        <input type="text" class="form-control" id="recipeName" placeholder="Enter recipe name">
+      </div>
+      <div class="form-group">
+        <label for="recipeContent">Recipe</label>
+        <textarea class="form-control" id="recipeContent" rows="6" placeholder="Enter recipe"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Recipe</button>
+    </form>
+
+    <div id="recipeResults" class="mt-5">
+      <!-- Recipe and nutritional analysis results will be displayed here -->
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+   (function (){
+    const titleInput=document.getElementById('recipeName');
+    const recipeInput= document.getElementById('recipeContent');
+    const output= document.getElementById('recipeResults');
+    const appId= '561efa7d';
+    const apiKey='1d163481623ba584d921f1821c0f0f85';
+    function fetchRecipe(){
+        let title=titleInput.value;
+        let ingr= recipeInput.value.split('\n');
+        return fetch(`https://api.edamam.com/api/nutrition-details?app_id=${appId}&app_key=${apiKey}`, {
+            method: 'POST',
+            cache:'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            } ,
+            body: JSON.stringify({title,ingr})
+        }).then(response=>response.json());
+    }
+
+     document.getElementById('recipeForm').addEventListener('submit',function(e){
+        e.preventDefault();
+
+        fetchRecipe().then(data=> {
+            let fragments= [];
+            Object.keys(data.totalDaily).forEach(key => {
+                let obj= data.totalDaily[key];
+                fragments.push(`<dt>${obj.label}<dt><dd>${obj.quantity}${obj.unit}</dd>`)
+                })
+            let html= `<dl>
+                <dt>Calories</dt>
+                <dd>${data.calories}</dd>
+                ${fragments.join('')}
+                </dl>`;
+
+                output.innerHTML= html;
+     });
+    })
+   })();
+  </script>
+</body>
+
+</html>
